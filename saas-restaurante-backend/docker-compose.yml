@@ -1,0 +1,40 @@
+services:
+  db:
+    platform: linux/amd64
+    image: postgres:16
+    container_name: resto_saas_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: resto_saas
+    ports:
+      - "5432:5432"
+    volumes:
+      - resto_saas_data:/var/lib/postgresql/data
+
+  api:
+    platform: linux/amd64
+    build: .
+    container_name: resto_saas_api
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/resto_saas?schema=public
+      PRISMA_CLIENT_ENGINE_TYPE: library
+      JWT_SECRET: super-secret-cambia-esto
+      JWT_EXPIRES_IN: 7d
+      APP_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: ""
+      STRIPE_WEBHOOK_SECRET: ""
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  resto_saas_data:
+
+
+

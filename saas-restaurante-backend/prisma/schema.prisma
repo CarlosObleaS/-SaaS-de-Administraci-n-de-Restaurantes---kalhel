@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MESERO
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  EXPIRED
+  CANCELED
+}
+
+enum OrderStatus {
+  PENDIENTE
+  EN_PREPARACION
+  SERVIDO
+  CANCELADO
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  users        User[]
+  categories   Category[]
+  items        MenuItem[]
+  orders       Order[]
+  subscription Subscription?
+  printer      PrinterConfig?
+}
+
+model User {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role    @default(MESERO)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id           String     @id @default(cuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  status           SubscriptionStatus @default(TRIAL)
+  trialEndsAt      DateTime
+  currentPeriodEnd DateTime?
+
+  stripeCustomerId String?
+  stripeSubId      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  name      String
+  createdAt DateTime @default(now())
+
+  items MenuItem[]
+}
+
+model MenuItem {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  name        String
+  description String?
+  price       Decimal
+  imageUrl    String?
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  tableNumber String
+  status      OrderStatus @default(PENDIENTE)
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+
+  qty   Int
+  price Decimal
+}
+
+model PrinterConfig {
+  id           String     @id @default(cuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  type      String // "NETWORK" | "USB" (texto simple para MVP)
+  host      String? // ip
+  port      Int?
+  name      String? // nombre/alias
+  isEnabled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
