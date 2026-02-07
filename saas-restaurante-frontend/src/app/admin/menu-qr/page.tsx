@@ -35,13 +35,24 @@ export default function MenuQrPage() {
       setLoading(true);
       setError(null);
       try {
-        const slug = process.env.NEXT_PUBLIC_RESTAURANT_SLUG || "demo-resto";
+        const storedSlug =
+          typeof window !== "undefined"
+            ? localStorage.getItem("restaurantSlug")
+            : null;
+        const slug =
+          storedSlug || process.env.NEXT_PUBLIC_RESTAURANT_SLUG || "demo-resto";
         // Primero intenta con token (admin) para sincronizar con Gestión de Platos
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token")
+            : null;
         if (token) {
-          const resAuth = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/menu/items`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const resAuth = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/menu/items`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (resAuth.ok) {
             const dataAuth: Item[] = await resAuth.json();
             setItems(dataAuth);
@@ -49,10 +60,14 @@ export default function MenuQrPage() {
           }
         }
         // Fallback público por slug
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/public/restaurants/${slug}/menu`
-        );
-        if (!res.ok) throw new Error("No se pudo cargar el menú");
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/public/restaurants/${slug}/menu`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const body = await res.text().catch(() => "");
+          throw new Error(
+            `No se pudo cargar el menú (${res.status}). Slug: ${slug}. ${body}`
+          );
+        }
         const data: PublicMenu = await res.json();
         const flat = data.categories.flatMap((c) =>
           c.items.map((i) => ({ ...i, category: { name: c.name } }))
@@ -91,12 +106,16 @@ export default function MenuQrPage() {
           ←
         </button>
       </div>
-      <div className="rounded-3xl bg-[#FFF6ED] p-8 text-center shadow-sm">
+      <div className="rounded-3xl bg-[#FFF6ED] p-5 text-center shadow-sm sm:p-8">
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-500 text-2xl text-white shadow">
           🍴
         </div>
-        <h1 className="text-4xl font-bold text-slate-900">Menú Digital</h1>
-        <p className="text-slate-500">Explora nuestros deliciosos platos</p>
+        <h1 className="text-2xl font-bold text-slate-900 sm:text-4xl">
+          Menú Digital
+        </h1>
+        <p className="text-sm text-slate-500 sm:text-base">
+          Explora nuestros deliciosos platos
+        </p>
         <div className="mt-2 text-sm text-slate-500">🧾 Acceso mediante código QR</div>
       </div>
 
@@ -142,7 +161,17 @@ export default function MenuQrPage() {
             >
               <div className="relative h-32 w-full overflow-hidden rounded-2xl md:w-52">
                 {dish.imageUrl ? (
-                  <Image src={dish.imageUrl} alt={dish.name} fill className="object-cover" />
+                  <Image
+                    src={
+                      dish.imageUrl.startsWith("/uploads")
+                        ? `${process.env.NEXT_PUBLIC_API_URL}${dish.imageUrl}`
+                        : dish.imageUrl
+                    }
+                    alt={dish.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
                 ) : (
                   <div className="flex h-full items-center justify-center bg-slate-100 text-slate-400">
                     Sin imagen

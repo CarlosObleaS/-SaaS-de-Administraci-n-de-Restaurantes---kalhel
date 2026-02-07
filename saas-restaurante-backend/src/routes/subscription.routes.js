@@ -1,8 +1,12 @@
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
+const { requireAuth } = require("../middleware/auth");
+const controller = require("../controllers/subscription.controller");
 
-router.get("/", (_req, res) => {
-  res.json({ message: "subscription route placeholder" });
-});
+router.use(requireAuth);
+
+router.get("/", controller.getStatus);
+router.post("/checkout", controller.checkout);
+// Ruta de prueba para cancelar manualmente la suscripción del restaurante actual
+router.post("/cancel-test", controller.cancelTest);
 
 module.exports = router;

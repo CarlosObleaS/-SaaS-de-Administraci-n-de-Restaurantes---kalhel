@@ -140,7 +140,7 @@ export default function PedidosPage() {
 
   return (
     <section className="pb-16">
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-6 flex items-start gap-3">
         <button
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow"
           onClick={() => router.back()}
@@ -149,22 +149,26 @@ export default function PedidosPage() {
           ←
         </button>
         <div>
-          <h1 className="text-4xl font-bold text-slate-900">Estado de Pedidos</h1>
-          <p className="text-slate-500">Gestiona el estado de todos los pedidos activos</p>
+          <h1 className="text-2xl font-bold text-slate-900 sm:text-4xl">
+            Estado de Pedidos
+          </h1>
+          <p className="text-sm text-slate-500 sm:text-base">
+            Gestiona el estado de todos los pedidos activos
+          </p>
         </div>
       </div>
 
       <div className="mb-6 rounded-3xl border border-[#E7DCD2] bg-white p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-3">Nuevo pedido</h3>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
           <input
-            className="h-11 rounded-xl border border-slate-200 px-4 outline-none focus:ring-2 focus:ring-orange-300"
+            className="h-11 w-full rounded-xl border border-slate-200 px-4 outline-none focus:ring-2 focus:ring-orange-300 sm:col-span-2"
             placeholder="Mesa (ej. 5)"
             value={tableNumber}
             onChange={(e) => setTableNumber(e.target.value)}
           />
           <select
-            className="h-11 rounded-xl border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-orange-300"
+            className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-orange-300 sm:col-span-3"
             value={selectedItemId}
             onChange={(e) => setSelectedItemId(e.target.value)}
           >
@@ -177,13 +181,13 @@ export default function PedidosPage() {
           <input
             type="number"
             min={1}
-            className="h-11 w-20 rounded-xl border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-orange-300"
+            className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-orange-300 sm:col-span-1"
             value={qty}
             onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
           />
           <button
             type="button"
-            className="h-11 rounded-xl bg-orange-500 px-4 text-white hover:bg-orange-600"
+            className="h-11 w-full rounded-xl bg-orange-500 px-4 text-white hover:bg-orange-600 sm:col-span-2"
             onClick={addToCart}
             disabled={!selectedItemId}
           >
@@ -205,7 +209,7 @@ export default function PedidosPage() {
         </div>
         <div className="mt-3 flex justify-end">
           <button
-            className="h-11 rounded-xl bg-orange-500 px-5 text-white hover:bg-orange-600 disabled:opacity-60"
+            className="h-11 w-full rounded-xl bg-orange-500 px-5 text-white hover:bg-orange-600 disabled:opacity-60 sm:w-auto"
             onClick={createOrder}
             disabled={creating || !tableNumber || cart.length === 0}
           >

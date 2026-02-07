@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { jwtDecode } from "jwt-decode";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,11 +18,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -28,10 +33,38 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      localStorage.setItem("token", data.token); // avance 1 (simple)
+      const token = data.token;
+
+      if (!token) {
+        throw new Error("Token no recibido");
+      }
+
+      /**
+       * 🔓 Decodificar JWT
+       */
+      const decoded: any = jwtDecode(token);
+      const role = decoded?.role;
+
+      if (!role) {
+        throw new Error("Rol no encontrado en el token");
+      }
+
+      /**
+       * 💾 Guardar sesión
+       */
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+      if (data?.restaurant?.slug) {
+        localStorage.setItem("restaurantSlug", data.restaurant.slug);
+      }
+
+      /**
+       * 🚦 Redirección
+       * (misma ruta, el menú se filtra por rol)
+       */
       router.push("/admin");
     } catch (err: any) {
-      setError(err.message ?? "Error al iniciar sesión");
+      setError(err.message || "Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
@@ -45,7 +78,9 @@ export default function LoginPage() {
             <span className="text-white text-2xl">🍴</span>
           </div>
 
-          <h1 className="text-3xl font-bold text-slate-800">Iniciar sesión</h1>
+          <h1 className="text-3xl font-bold text-slate-800">
+            Iniciar sesión
+          </h1>
           <p className="text-slate-500 text-sm text-center">
             Sistema de Administración de Restaurantes
           </p>
@@ -93,15 +128,19 @@ export default function LoginPage() {
             {loading ? "Ingresando..." : "Iniciar sesión"}
           </button>
 
-          <button
-            type="button"
-            className="w-full text-orange-600 text-sm hover:underline"
-            onClick={() => router.push("/register")}
-          >
-            Registrar restaurante
-          </button>
+          <p className="mt-6 text-center text-sm text-slate-600">
+            ¿No tienes cuenta?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-orange-500 hover:text-orange-600 underline"
+            >
+              Registrar restaurante
+            </Link>
+          </p>
         </form>
       </div>
     </main>
   );
 }
+
+

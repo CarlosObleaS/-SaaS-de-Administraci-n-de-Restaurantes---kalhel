@@ -1,8 +1,10 @@
 const router = require("express").Router();
 const { requireAuth } = require("../middleware/auth");
+const { requireActiveSubscription } = require("../middleware/subscription");
 const controller = require("../controllers/orders.controller");
 
-router.use(requireAuth);
+// Rutas protegidas: requieren autenticación y suscripción activa
+router.use(requireAuth, requireActiveSubscription);
 
 router.post("/", controller.createOrder);
 router.get("/active", controller.activeOrders);

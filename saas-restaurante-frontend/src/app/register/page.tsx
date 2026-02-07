@@ -33,6 +33,9 @@ export default function RegisterPage() {
       }
       const data = await res.json();
       localStorage.setItem("token", data.token);
+      if (data?.restaurant?.slug) {
+        localStorage.setItem("restaurantSlug", data.restaurant.slug);
+      }
       router.push("/admin");
     } catch (err: any) {
       setError(err.message ?? "Error al registrar");
