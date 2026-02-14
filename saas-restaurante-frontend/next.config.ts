@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
+const apiHost = process.env.NEXT_PUBLIC_API_URL
+  ? new URL(process.env.NEXT_PUBLIC_API_URL).hostname
+  : null;
+
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Permite acceder al dev server desde otros dispositivos en la LAN (ej. celular)
-  // para evitar warnings / futuros bloqueos de CORS hacia /_next/*.
   allowedDevOrigins: [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -19,6 +23,9 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "127.0.0.1", port: "4000" },
       { protocol: "http", hostname: "192.168.1.50", port: "4000" },
       { protocol: "http", hostname: "192.168.1.102", port: "4000" },
+      ...(apiHost
+        ? [{ protocol: "http" as const, hostname: apiHost, port: "4000", pathname: "/**" }]
+        : []),
     ],
   },
 };

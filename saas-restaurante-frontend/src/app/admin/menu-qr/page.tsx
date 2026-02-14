@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { formatPrice } from "@/lib/formatPrice";
 
 type Item = {
   id: string;
@@ -29,6 +30,7 @@ export default function MenuQrPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [menuUrl, setMenuUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -41,6 +43,12 @@ export default function MenuQrPage() {
             : null;
         const slug =
           storedSlug || process.env.NEXT_PUBLIC_RESTAURANT_SLUG || "demo-resto";
+
+        // URL pública del menú para usar en el QR
+        if (typeof window !== "undefined") {
+          const origin = window.location.origin;
+          setMenuUrl(`${origin}/menu/${slug}`);
+        }
         // Primero intenta con token (admin) para sincronizar con Gestión de Platos
         const token =
           typeof window !== "undefined"
@@ -119,6 +127,26 @@ export default function MenuQrPage() {
         <div className="mt-2 text-sm text-slate-500">🧾 Acceso mediante código QR</div>
       </div>
 
+      {menuUrl && (
+        <div className="mt-6 flex flex-col items-center gap-4 rounded-3xl border border-[#E7DCD2] bg-white p-5 shadow-sm sm:flex-row sm:items-start sm:gap-6">
+          <div className="rounded-2xl border border-[#E7DCD2] bg-[#FFF6ED] p-3">
+            {/* QR generado por un servicio externo sencillo */}
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                menuUrl
+              )}`}
+              alt="Código QR del menú"
+              className="h-52 w-52"
+            />
+          </div>
+          <div className="text-sm text-slate-600">
+            <p className="font-semibold text-slate-900">Código QR del menú</p>
+            <p>Escanéalo con la cámara del celular para abrir el menú digital.</p>
+            <p className="mt-2 break-all text-xs text-slate-500">{menuUrl}</p>
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E7DCD2] bg-white px-4 py-3 shadow-sm">
         <span className="text-slate-400">🔍</span>
         <input
@@ -189,7 +217,7 @@ export default function MenuQrPage() {
                   </span>
                 </div>
                 <div className="text-lg font-semibold text-emerald-700">
-                  ${formatPrice(dish.price as any)}
+                  {formatPrice(dish.price as number)}
                 </div>
               </div>
             </article>
@@ -201,8 +229,3 @@ export default function MenuQrPage() {
   );
 }
 
-function formatPrice(price: number | string | null | undefined) {
-  const n = Number(price);
-  if (Number.isFinite(n)) return n.toFixed(2);
-  return price ?? "";
-}

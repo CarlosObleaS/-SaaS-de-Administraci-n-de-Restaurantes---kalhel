@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from "@/lib/formatPrice";
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -253,7 +255,7 @@ export default function CartaPage() {
                 </span>
 
                 <div className="pt-1 text-lg font-semibold text-emerald-700">
-                  ${Number(dish.price).toFixed(2)}
+                  {formatPrice(Number(dish.price))}
                 </div>
 
                 <div className="flex gap-2 pt-2 text-sm">

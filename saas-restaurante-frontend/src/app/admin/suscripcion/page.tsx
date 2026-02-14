@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatPrice } from "@/lib/formatPrice";
 import { useRouter } from "next/navigation";
 
 type Subscription = {
@@ -11,12 +12,8 @@ type Subscription = {
 };
 
 const plans = [
-  { id: "starter", name: "Starter", price: 19, features: ["50 pedidos/mes", "1 impresora"], periodDays: 30 },
   { id: "pro", name: "Pro", price: 39, features: ["Pedidos ilimitados", "2 impresoras", "Soporte"], periodDays: 30 },
-  { id: "enterprise", name: "Enterprise", price: 79, features: ["Multisucursal", "Prioridad"], periodDays: 30 },
 ];
-
-const providers = ["stripe", "paypal", "culqi"] as const;
 
 export default function SuscripcionPage() {
   const router = useRouter();
@@ -24,7 +21,7 @@ export default function SuscripcionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selPlan, setSelPlan] = useState("pro");
-  const [provider, setProvider] = useState<(typeof providers)[number]>("stripe");
+  const provider = "stripe";
   const [creating, setCreating] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -145,27 +142,13 @@ export default function SuscripcionPage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {providers.map((p) => (
-          <button
-            key={p}
-            onClick={() => setProvider(p)}
-            className={`rounded-full px-4 py-2 text-sm ${
-              provider === p ? "bg-orange-500 text-white" : "bg-white border border-slate-200 text-slate-700"
-            }`}
-          >
-            {p.toUpperCase()}
-          </button>
-        ))}
-      </div>
-
       {error && <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-red-600">{error}</div>}
       {message && <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-emerald-700">{message}</div>}
 
       {loading ? (
         <p className="text-slate-500">Cargando planes...</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 max-w-md">
           {plans.map((plan) => (
             <article
               key={plan.id}
@@ -176,7 +159,7 @@ export default function SuscripcionPage() {
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
-                <div className="text-2xl font-bold text-slate-900">${plan.price}</div>
+                <div className="text-2xl font-bold text-slate-900">{formatPrice(plan.price)}</div>
               </div>
               <div className="text-sm text-slate-500">Mensual</div>
               <ul className="mt-3 space-y-1 text-sm text-slate-600">

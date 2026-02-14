@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { formatPrice } from "@/lib/formatPrice";
 
 type Item = {
   id: string;
@@ -180,7 +181,7 @@ export default function MenuQrPage() {
                         {dish.name}
                     </h3>
                     <span className="text-lg font-bold text-emerald-600">
-                        ${formatPrice(dish.price as any)}
+                        {formatPrice(dish.price as number)}
                     </span>
                     </div>
 
@@ -211,8 +212,3 @@ export default function MenuQrPage() {
     );
 }
 
-function formatPrice(price: number | string | null | undefined) {
-  const n = Number(price);
-  if (Number.isFinite(n)) return n.toFixed(2);
-  return price ?? "";
-}

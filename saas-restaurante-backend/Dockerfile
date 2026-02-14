@@ -2,16 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Instala dependencias primero (mejor cache)
 COPY package*.json ./
-RUN npm install
+RUN npm ci --omit=dev
 
-# Copia el resto del proyecto
 COPY . .
-
-# Genera Prisma Client
 RUN npx prisma generate
 
 EXPOSE 4000
 
-CMD ["npm", "run", "dev"]
+# Migraciones y arranque
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss 2>/dev/null; node src/server.js"]

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from "@/lib/formatPrice";
+
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -174,7 +176,7 @@ export default function PedidosPage() {
           >
             {menuItems.map((i) => (
               <option key={i.id} value={i.id}>
-                {i.name} (${i.price})
+                {i.name} ({formatPrice(i.price)})
               </option>
             ))}
           </select>
@@ -205,7 +207,7 @@ export default function PedidosPage() {
         )}
         <div className="mt-3 flex items-center justify-between">
           <span className="text-sm text-slate-500">Total estimado</span>
-          <span className="text-lg font-semibold text-emerald-700">${totalCart.toFixed(2)}</span>
+          <span className="text-lg font-semibold text-emerald-700">{formatPrice(totalCart)}</span>
         </div>
         <div className="mt-3 flex justify-end">
           <button
@@ -293,7 +295,7 @@ function OrderCard({
         <ul className="space-y-1">
           {order.items.map((it) => (
             <li key={it.id}>
-              • {it.qty}x {it.menuItem?.name ?? ""} (${(it.price * it.qty).toFixed(2)})
+              • {it.qty}x {it.menuItem?.name ?? ""} ({formatPrice(it.price * it.qty)})
             </li>
           ))}
         </ul>
@@ -302,7 +304,7 @@ function OrderCard({
       <div className="mt-4 flex items-center justify-between">
         <span className="text-sm text-slate-500">Total</span>
         <span className="text-lg font-semibold text-emerald-700">
-          ${order.items.reduce((acc, it) => acc + it.qty * it.price, 0).toFixed(2)}
+          {formatPrice(order.items.reduce((acc, it) => acc + it.qty * it.price, 0))}
         </span>
       </div>
 

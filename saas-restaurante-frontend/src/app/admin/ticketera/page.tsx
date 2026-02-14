@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatPrice } from "@/lib/formatPrice";
 
 export default function TicketeraPage() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -71,7 +72,7 @@ export default function TicketeraPage() {
 
             <hr className="my-2" />
             <p className="font-bold">
-              TOTAL: S/ {t.total.toFixed(2)}
+              TOTAL: {formatPrice(t.total)}
             </p>
           </div>
         ))}

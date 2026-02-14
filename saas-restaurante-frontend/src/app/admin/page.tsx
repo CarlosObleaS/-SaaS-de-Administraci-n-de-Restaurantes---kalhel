@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { formatPrice } from "@/lib/formatPrice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -238,7 +239,7 @@ export default function AdminPage() {
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-4">
           <StatCard
             title="Ventas hoy"
-            value={salesToday !== null ? `$${salesToday.toLocaleString()}` : "—"}
+            value={salesToday !== null ? formatPrice(salesToday) : "—"}
             icon="💰"
           />
           <StatCard

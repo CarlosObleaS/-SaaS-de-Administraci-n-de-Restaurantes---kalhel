@@ -1,0 +1,64 @@
+# Despliegue completo: BD + API + Frontend
+# Ajusta VM_IP con la IP pública o dominio de tu VM
+
+services:
+  db:
+    image: postgres:16
+    container_name: resto_saas_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: resto_saas
+    ports:
+      - "5432:5432"
+    volumes:
+      - resto_saas_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./saas-restaurante-backend
+      dockerfile: Dockerfile
+    container_name: resto_saas_api
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/resto_saas?schema=public
+      PRISMA_CLIENT_ENGINE_TYPE: library
+      JWT_SECRET: ${JWT_SECRET:-cambia-este-secret-en-produccion}
+      JWT_EXPIRES_IN: 7d
+      APP_URL: http://${VM_IP:-localhost}:3000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - api_uploads:/app/uploads
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./saas-restaurante-frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://${VM_IP:-localhost}:4000
+        NEXT_PUBLIC_RESTAURANT_SLUG: ${NEXT_PUBLIC_RESTAURANT_SLUG:-demo-resto}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+        NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${NEXT_PUBLIC_PAYPAL_CLIENT_ID:-}
+    container_name: resto_saas_web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  resto_saas_data:
+  api_uploads:
